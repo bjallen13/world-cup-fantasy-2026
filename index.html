@@ -6,32 +6,17 @@
     <title>World Cup 2026 Fantasy Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans p-4 md:p-8 relative">
+<body class="bg-slate-50 text-slate-800 font-sans p-4 md:p-8">
     <div class="max-w-7xl mx-auto space-y-10">
-        <header class="text-center py-6 border-b border-slate-200 relative">
-            <h1 class="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-emerald-500 tracking-tight drop-shadow-sm">
+        
+        <header class="text-center py-6 border-b border-slate-200">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-emerald-500 tracking-tight drop-shadow-sm mb-4">
                 World Cup 2026 Fantasy League
             </h1>
+            <a href="PUT_YOUR_EDITABLE_GOOGLE_SHEET_LINK_HERE" target="_blank" class="inline-block bg-slate-800 hover:bg-indigo-600 text-white font-bold py-2 px-6 rounded-xl shadow transition-colors">
+                📝 Click Here to Update Scores
+            </a>
         </header>
-
-        <div id="export-box" class="hidden sticky top-4 z-50 bg-slate-900 p-6 rounded-2xl border-2 border-emerald-500 shadow-2xl transform transition-all">
-            <div class="flex justify-between items-center mb-4">
-                <div>
-                    <h3 class="text-emerald-400 font-black text-lg">✓ Match Calculated & Standings Updated!</h3>
-                    <p class="text-sm text-slate-400">To make this update live for everyone, copy the code below and paste it into your GitHub database.</p>
-                </div>
-                <button onclick="document.getElementById('export-box').classList.add('hidden')" class="text-slate-400 hover:text-white">✕ Close</button>
-            </div>
-            <textarea id="admin-json-output" readonly class="w-full h-32 bg-slate-950 text-slate-300 text-xs font-mono p-4 rounded-xl border border-slate-700 focus:outline-none mb-4"></textarea>
-            <div class="flex flex-col sm:flex-row items-center justify-between space-y-4 sm:space-y-0">
-                <button onclick="copyAdminJson()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-3 rounded-xl font-black shadow-lg transition-colors w-full sm:w-auto text-center">
-                    1. Copy Code Block
-                </button>
-                <a href="https://github.com" target="_blank" class="text-indigo-400 hover:text-indigo-300 hover:underline font-bold text-center w-full sm:w-auto">
-                    2. Open GitHub matches.json 👉
-                </a>
-            </div>
-        </div>
 
         <section class="bg-white rounded-2xl shadow-xl p-6 border-t-4 border-indigo-500">
             <h2 class="text-3xl font-black mb-6 text-indigo-900 flex items-center"><span class="mr-3">🏆</span> Leaderboard</h2>
@@ -67,6 +52,9 @@
     </div>
 
     <script>
+        // --- PASTE YOUR PUBLISHED CSV LINK HERE ---
+        const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQnpqdB8xCjDNMgD22DkjjOosHWtNR92PPm7kW9gzkisxmWhOP_eHgCvDVCL5EBP5tkRuTT9spgkUHO/pub?output=csv";
+
         const assignments = {
             "JP": ["Mexico", "Morocco", "Cape Verde", "Algeria"],
             "Fro": ["Scotland", "Spain", "Japan", "South Africa"],
@@ -108,11 +96,29 @@
 
         async function loadDashboard() {
             try {
-                const response = await fetch('matches.json');
-                localMatchesState = await response.json();
+                // Fetch the CSV directly from Google Sheets
+                const response = await fetch(GOOGLE_SHEET_CSV_URL);
+                const csvText = await response.text();
+                
+                // Convert CSV text into JSON format
+                const lines = csvText.split('\\n').filter(l => l.trim() !== '');
+                for (let i = 1; i < lines.length; i++) {
+                    const row = lines[i].split(',').map(item => item.trim());
+                    if (row.length >= 6) {
+                        localMatchesState.push({
+                            date: row[0],
+                            home: row[1],
+                            away: row[2],
+                            homeScore: row[3] === '' ? null : parseInt(row[3]),
+                            awayScore: row[4] === '' ? null : parseInt(row[4]),
+                            status: row[5].toLowerCase()
+                        });
+                    }
+                }
                 renderAllData();
             } catch (error) {
-                console.error("Error loading match data:", error);
+                console.error("Error loading data from Google Sheets:", error);
+                document.getElementById('upcoming-container').innerHTML = `<p class="text-rose-500 font-bold">Failed to load data. Make sure your Google Sheet is published to the web as a CSV.</p>`;
             }
         }
 
@@ -123,13 +129,11 @@
             });
 
             localMatchesState.forEach(m => {
-                if (m.status === "final" && m.homeScore !== null && m.awayScore !== null) {
-                    const hScore = parseInt(m.homeScore);
-                    const aScore = parseInt(m.awayScore);
-                    teamStats[m.home].gd += (hScore - aScore);
-                    teamStats[m.away].gd += (aScore - hScore);
-                    if (hScore > aScore) teamStats[m.home].points += 3;
-                    else if (hScore < aScore) teamStats[m.away].points += 3;
+                if (m.status === "final" && m.homeScore !== null && m.awayScore !== null && !isNaN(m.homeScore) && !isNaN(m.awayScore)) {
+                    teamStats[m.home].gd += (m.homeScore - m.awayScore);
+                    teamStats[m.away].gd += (m.awayScore - m.homeScore);
+                    if (m.homeScore > m.awayScore) teamStats[m.home].points += 3;
+                    else if (m.homeScore < m.awayScore) teamStats[m.away].points += 3;
                     else {
                         teamStats[m.home].points += 1;
                         teamStats[m.away].points += 1;
@@ -137,6 +141,7 @@
                 }
             });
 
+            // Leaderboard Render
             let playerStats = {};
             for (const player in assignments) playerStats[player] = { points: 0, gd: 0 };
             for (const [team, stats] of Object.entries(teamStats)) {
@@ -145,136 +150,64 @@
                     playerStats[stats.owner].gd += stats.gd;
                 }
             }
-
-            const sortedPlayers = Object.entries(playerStats).sort((a, b) => {
-                if (b[1].points === a[1].points) return b[1].gd - a[1].gd;
-                return b[1].points - a[1].points;
-            });
-
+            const sortedPlayers = Object.entries(playerStats).sort((a, b) => b[1].points === a[1].points ? b[1].gd - a[1].gd : b[1].points - a[1].points);
             const leaderboardBody = document.getElementById('leaderboard-body');
             leaderboardBody.innerHTML = "";
             sortedPlayers.forEach(([player, stats], index) => {
                 const isTop = index === 0 ? "bg-amber-50 font-bold" : "hover:bg-slate-50 transition-colors";
-                const rankColor = index === 0 ? "text-amber-500 text-xl" : "text-slate-500";
-                const gdColor = stats.gd > 0 ? "text-emerald-600 font-bold" : (stats.gd < 0 ? "text-rose-600 font-bold" : "text-slate-400");
                 leaderboardBody.innerHTML += `
                     <tr class="${isTop}">
-                        <td class="p-4 border-t ${rankColor}">${index + 1}</td>
+                        <td class="p-4 border-t text-slate-500">${index + 1}</td>
                         <td class="p-4 border-t text-slate-800 text-lg">${player}</td>
-                        <td class="p-4 border-t text-center ${gdColor}">${stats.gd > 0 ? '+'+stats.gd : stats.gd}</td>
+                        <td class="p-4 border-t text-center ${stats.gd > 0 ? 'text-emerald-600 font-bold' : 'text-slate-400'}">${stats.gd > 0 ? '+'+stats.gd : stats.gd}</td>
                         <td class="p-4 border-t font-black text-indigo-700 text-right text-xl">${stats.points}</td>
                     </tr>`;
             });
 
+            // Render Groups
             const groupsContainer = document.getElementById('groups-container');
             groupsContainer.innerHTML = "";
             for (const [groupName, teams] of Object.entries(groups)) {
-                const sortedTeams = teams.sort((a, b) => {
-                    if (teamStats[b].points === teamStats[a].points) return teamStats[b].gd - teamStats[a].gd;
-                    return teamStats[b].points - teamStats[a].points;
-                });
-                
+                const sortedTeams = teams.sort((a, b) => teamStats[b].points === teamStats[a].points ? teamStats[b].gd - teamStats[a].gd : teamStats[b].points - teamStats[a].points);
                 let groupHtml = `<div class="bg-white rounded-2xl shadow-md border-2 border-slate-100 overflow-hidden"><div class="bg-gradient-to-r from-emerald-600 to-teal-500 text-white p-3 font-black text-center text-lg tracking-wider">GROUP ${groupName}</div><ul class="divide-y divide-slate-100">`;
-                
                 sortedTeams.forEach(team => {
-                    const gd = teamStats[team].gd;
                     groupHtml += `
                         <li class="p-4 flex justify-between items-center text-sm">
                             <div><span class="font-bold text-slate-800 text-base block">${team}</span><span class="text-xs font-semibold text-indigo-500 uppercase tracking-wide">${teamStats[team].owner}</span></div>
-                            <div class="flex items-center space-x-3"><span class="text-xs font-bold text-slate-400 w-8 text-right">GD: ${gd > 0 ? '+'+gd : gd}</span><span class="font-black bg-emerald-50 px-3 py-1 rounded text-emerald-700 w-16 text-center shadow-sm border border-emerald-100">${teamStats[team].points} pt</span></div>
+                            <div class="flex items-center space-x-3"><span class="text-xs font-bold text-slate-400 w-8 text-right">GD: ${teamStats[team].gd > 0 ? '+'+teamStats[team].gd : teamStats[team].gd}</span><span class="font-black bg-emerald-50 px-3 py-1 rounded text-emerald-700 w-16 text-center shadow-sm border border-emerald-100">${teamStats[team].points} pt</span></div>
                         </li>`;
                 });
-                groupHtml += `</ul></div>`;
-                groupsContainer.innerHTML += groupHtml;
+                groupsContainer.innerHTML += groupHtml + `</ul></div>`;
             }
 
+            // Render Schedules
             const upcomingContainer = document.getElementById('upcoming-container');
             const completedContainer = document.getElementById('completed-container');
-            upcomingContainer.innerHTML = "";
-            completedContainer.innerHTML = "";
+            upcomingContainer.innerHTML = ""; completedContainer.innerHTML = "";
             
-            localMatchesState.forEach((m, index) => {
-                const isFinal = m.status === "final";
-                
-                if (isFinal) {
+            localMatchesState.forEach(m => {
+                if (m.status === "final") {
                     completedContainer.innerHTML += `
                         <div class="flex items-center justify-between p-4 bg-white rounded-xl border border-slate-200 shadow-sm">
-                            <div class="w-1/5 text-sm font-bold text-slate-500">${m.date}</div>
-                            <div class="w-3/5 flex items-center justify-center space-x-6 text-lg">
-                                <span class="font-bold text-right w-1/3 text-slate-800">${m.home}</span>
+                            <div class="w-1/4 text-sm font-bold text-slate-500">${m.date}</div>
+                            <div class="w-3/4 flex items-center justify-center space-x-6 text-lg">
+                                <span class="font-bold text-right w-1/3 text-slate-800 truncate">${m.home}</span>
                                 <span class="font-black px-4 py-1 bg-slate-800 text-white rounded-lg shadow-md">${m.homeScore} - ${m.awayScore}</span>
-                                <span class="font-bold text-left w-1/3 text-slate-800">${m.away}</span>
+                                <span class="font-bold text-left w-1/3 text-slate-800 truncate">${m.away}</span>
                             </div>
-                            <div class="w-1/5 text-right"></div>
                         </div>`;
                 } else {
                     upcomingContainer.innerHTML += `
-                        <div id="match-view-${index}" class="flex flex-col sm:flex-row items-center justify-between p-4 bg-white rounded-xl border border-slate-200 shadow-sm space-y-4 sm:space-y-0">
-                            <div class="w-full sm:w-1/5 text-sm font-bold text-slate-500 text-center sm:text-left">${m.date}</div>
-                            <div class="w-full sm:w-3/5 flex items-center justify-center space-x-6 text-lg">
+                        <div class="flex items-center justify-between p-4 bg-white rounded-xl border border-slate-200 shadow-sm">
+                            <div class="w-1/4 text-sm font-bold text-slate-500">${m.date}</div>
+                            <div class="w-3/4 flex items-center justify-center space-x-6 text-lg">
                                 <span class="font-bold text-right w-1/3 text-slate-800 truncate">${m.home}</span>
                                 <span class="text-amber-500 font-black px-4 py-1 bg-amber-50 rounded-lg border border-amber-200">VS</span>
                                 <span class="font-bold text-left w-1/3 text-slate-800 truncate">${m.away}</span>
                             </div>
-                            <div class="w-full sm:w-1/5 text-center sm:text-right">
-                                <button onclick="openEditMode(${index})" class="text-xs bg-slate-100 hover:bg-indigo-600 hover:text-white text-slate-600 font-bold py-2 px-4 rounded-xl transition-all shadow-sm">Update Match ✏️</button>
-                            </div>
-                        </div>
-
-                        <div id="match-edit-${index}" class="hidden flex flex-col sm:flex-row items-center justify-between p-4 bg-indigo-50 rounded-xl border-2 border-indigo-400 shadow-lg transform scale-[1.01] transition-transform space-y-4 sm:space-y-0">
-                            <div class="w-full sm:w-1/5 text-sm font-black text-indigo-500 text-center sm:text-left">${m.date}</div>
-                            <div class="w-full sm:w-3/5 flex items-center justify-center space-x-3 text-lg">
-                                <span class="font-bold text-right w-1/3 text-indigo-900 truncate">${m.home}</span>
-                                <input type="number" id="edit-home-${index}" class="w-16 text-center font-black p-2 rounded-lg border-2 border-indigo-200 text-indigo-900 focus:outline-none focus:border-indigo-500" placeholder="0">
-                                <span class="font-black text-indigo-300">-</span>
-                                <input type="number" id="edit-away-${index}" class="w-16 text-center font-black p-2 rounded-lg border-2 border-indigo-200 text-indigo-900 focus:outline-none focus:border-indigo-500" placeholder="0">
-                                <span class="font-bold text-left w-1/3 text-indigo-900 truncate">${m.away}</span>
-                            </div>
-                            <div class="w-full sm:w-1/5 flex flex-col space-y-2 items-center sm:items-end">
-                                <button onclick="saveMatch(${index})" class="w-full sm:w-auto text-xs bg-emerald-500 hover:bg-emerald-600 text-white font-black py-2 px-4 rounded-xl shadow transition-colors">Save & Complete ✅</button>
-                                <button onclick="cancelEdit(${index})" class="text-xs text-slate-500 hover:text-slate-800 underline">Cancel</button>
-                            </div>
                         </div>`;
                 }
             });
-        }
-
-        function openEditMode(index) {
-            document.getElementById(`match-view-${index}`).classList.add('hidden');
-            document.getElementById(`match-edit-${index}`).classList.remove('hidden');
-        }
-
-        function cancelEdit(index) {
-            document.getElementById(`match-edit-${index}`).classList.add('hidden');
-            document.getElementById(`match-view-${index}`).classList.remove('hidden');
-        }
-
-        function saveMatch(index) {
-            const hInput = document.getElementById(`edit-home-${index}`).value;
-            const aInput = document.getElementById(`edit-away-${index}`).value;
-
-            if(hInput === "" || aInput === "") {
-                alert("Please enter a score for both teams before saving.");
-                return;
-            }
-
-            localMatchesState[index].homeScore = parseInt(hInput);
-            localMatchesState[index].awayScore = parseInt(aInput);
-            localMatchesState[index].status = "final";
-
-            renderAllData();
-
-            const exportBox = document.getElementById('export-box');
-            exportBox.classList.remove('hidden');
-            document.getElementById('admin-json-output').value = JSON.stringify(localMatchesState, null, 2);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function copyAdminJson() {
-            const textArea = document.getElementById('admin-json-output');
-            textArea.select();
-            document.execCommand('copy');
-            alert("Code Block Copied! Click Step 2 to go paste it into GitHub.");
         }
 
         loadDashboard();
