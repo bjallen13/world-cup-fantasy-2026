@@ -1,0 +1,12 @@
+[
+  { "date": "June 11", "home": "Mexico", "away": "South Africa", "homeScore": 2, "awayScore": 0, "status": "final" },
+  { "date": "June 11", "home": "South Korea", "away": "Czechia", "homeScore": 2, "awayScore": 1, "status": "final" },
+  { "date": "June 14", "home": "Germany", "away": "Curaçao", "homeScore": 7, "awayScore": 1, "status": "final" },
+  { "date": "June 18", "home": "Mexico", "away": "South Korea", "homeScore": 1, "awayScore": 0, "status": "final" },
+  { "date": "June 19", "home": "USA", "away": "Australia", "homeScore": 2, "awayScore": 0, "status": "final" },
+  { "date": "June 20", "home": "Netherlands", "away": "Sweden", "homeScore": 5, "awayScore": 1, "status": "final" },
+  { "date": "June 22", "home": "Norway", "away": "Senegal", "homeScore": null, "awayScore": null, "status": "upcoming" },
+  { "date": "June 23", "home": "Brazil", "away": "Morocco", "homeScore": null, "awayScore": null, "status": "upcoming" },
+  { "date": "June 24", "home": "England", "away": "Croatia", "homeScore": null, "awayScore": null, "status": "upcoming" },
+  { "date": "June 25", "home": "Canada", "away": "Switzerland", "homeScore": null, "awayScore": null, "status": "upcoming" }
+]
