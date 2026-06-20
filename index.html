@@ -52,7 +52,6 @@
     </div>
 
     <script>
-        // Directly exports the Google Sheet as a readable CSV database
         const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/1SLHXplp1fxpzq701dXr6rX4ImwXcM2-vLBjPiv23LKI/export?format=csv&gid=0";
 
         const assignments = {
@@ -99,27 +98,28 @@
                 const response = await fetch(GOOGLE_SHEET_CSV_URL);
                 const csvText = await response.text();
                 
-                const lines = csvText.split('\\n').filter(l => l.trim() !== '');
+                // FIXED BUG 1: Properly split by actual line breaks
+                const lines = csvText.split(/\r?\n/).filter(l => l.trim() !== '');
+                
                 for (let i = 1; i < lines.length; i++) {
-                    // Handle quoted CSV fields effectively
-                    const row = lines[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || lines[i].split(',');
-                    const cleanRow = row.map(item => item.replace(/(^"|"$)/g, '').trim());
+                    // FIXED BUG 2: Clean, simple comma split without breaking team names
+                    const row = lines[i].split(',');
                     
-                    if (cleanRow.length >= 6) {
+                    if (row.length >= 6) {
                         localMatchesState.push({
-                            date: cleanRow[0],
-                            home: cleanRow[1],
-                            away: cleanRow[2],
-                            homeScore: cleanRow[3] === '' ? null : parseInt(cleanRow[3]),
-                            awayScore: cleanRow[4] === '' ? null : parseInt(cleanRow[4]),
-                            status: cleanRow[5] ? cleanRow[5].toLowerCase() : 'upcoming'
+                            date: row[0].trim(),
+                            home: row[1].trim(),
+                            away: row[2].trim(),
+                            homeScore: row[3].trim() === '' ? null : parseInt(row[3].trim()),
+                            awayScore: row[4].trim() === '' ? null : parseInt(row[4].trim()),
+                            status: row[5].trim().toLowerCase()
                         });
                     }
                 }
                 renderAllData();
             } catch (error) {
                 console.error("Error loading data from Google Sheets:", error);
-                document.getElementById('upcoming-container').innerHTML = `<p class="text-rose-500 font-bold p-4 bg-rose-50 rounded">Failed to load data. Make sure your Google Sheet is shared as 'Anyone with the link can view'.</p>`;
+                document.getElementById('upcoming-container').innerHTML = `<p class="text-rose-500 font-bold p-4 bg-rose-50 rounded">Failed to load data. Make sure your Google Sheet is shared properly.</p>`;
             }
         }
 
