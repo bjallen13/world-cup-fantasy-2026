@@ -195,8 +195,70 @@
                 const isTop = index === 0 ? "bg-amber-50 font-black" : "hover:bg-slate-50 font-semibold";
                 const rankColor = index === 0 ? "text-amber-500 text-lg" : "text-slate-400";
                 
-                // ONLY ADDED FEATURE: The Blue Pills
+                // ONLY MODIFICATION: Extract assigned teams and build the blue pills
                 const playerTeams = assignments[player] || [];
-                const teamPills = playerTeams.map(t => `<span class="bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap shadow-sm border border-blue-200">${t}</span>`).join('');
+                const teamPills = playerTeams.map(t => `<span class="inline-block bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 rounded-full mt-1 mr-1">${t}</span>`).join('');
 
-                leaderboardBody.innerHTML
+                leaderboardBody.innerHTML += `
+                    <tr class="${isTop}">
+                        <td class="p-3 border-t text-center ${rankColor}">${index + 1}</td>
+                        <td class="p-3 border-t text-slate-800 text-base">
+                            <div>${player}</div>
+                            <div>${teamPills}</div>
+                        </td>
+                        <td class="p-3 border-t text-center text-sm ${stats.gd > 0 ? 'text-emerald-600' : (stats.gd < 0 ? 'text-rose-500' : 'text-slate-400')}">${stats.gd > 0 ? '+'+stats.gd : stats.gd}</td>
+                        <td class="p-3 border-t text-indigo-700 text-right text-lg pr-6">${stats.points}</td>
+                    </tr>`;
+            });
+
+            const groupsContainer = document.getElementById('groups-container');
+            groupsContainer.innerHTML = "";
+            for (const [groupName, teams] of Object.entries(groups)) {
+                const sortedTeams = teams.sort((a, b) => teamStats[b].points === teamStats[a].points ? teamStats[b].gd - teamStats[a].gd : teamStats[b].points - teamStats[a].points);
+                let groupHtml = `<div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"><div class="bg-slate-800 text-white py-2 px-3 font-black text-sm tracking-wider">GROUP ${groupName}</div><ul class="divide-y divide-slate-100">`;
+                sortedTeams.forEach(team => {
+                    groupHtml += `
+                        <li class="p-3 flex justify-between items-center">
+                            <div><span class="font-bold text-slate-800 text-sm block">${team}</span><span class="text-[10px] font-bold text-indigo-500 uppercase tracking-wide">${teamStats[team].owner}</span></div>
+                            <div class="flex items-center space-x-2"><span class="text-[11px] font-bold text-slate-400 w-6 text-right">${teamStats[team].gd > 0 ? '+'+teamStats[team].gd : teamStats[team].gd}</span><span class="font-black bg-slate-100 px-2 py-1 rounded text-slate-700 w-12 text-center text-xs border border-slate-200">${teamStats[team].points}</span></div>
+                        </li>`;
+                });
+                groupsContainer.innerHTML += groupHtml + `</ul></div>`;
+            }
+
+            const upcomingContainer = document.getElementById('upcoming-container');
+            const completedContainer = document.getElementById('completed-container');
+            upcomingContainer.innerHTML = ""; completedContainer.innerHTML = "";
+            
+            localMatchesState.forEach(m => {
+                const isFinal = m.status === "final";
+                const matchCard = `
+                    <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+                        <div class="flex justify-between items-center border-b border-slate-100 pb-2 mb-2">
+                            <span class="text-[11px] font-black text-slate-400 uppercase tracking-wide">${m.date}</span>
+                            ${isFinal ? `<span class="text-[10px] font-black text-white bg-slate-800 px-2 py-0.5 rounded">FT</span>` : `<span class="text-[10px] font-black text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded">UPCOMING</span>`}
+                        </div>
+                        <div class="space-y-1.5">
+                            <div class="flex justify-between items-center">
+                                <span class="font-bold text-slate-800 text-sm">${m.home}</span>
+                                <span class="font-black ${isFinal ? 'text-slate-800 text-base' : 'text-slate-300'}">${m.homeScore !== null ? m.homeScore : '-'}</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="font-bold text-slate-800 text-sm">${m.away}</span>
+                                <span class="font-black ${isFinal ? 'text-slate-800 text-base' : 'text-slate-300'}">${m.awayScore !== null ? m.awayScore : '-'}</span>
+                            </div>
+                        </div>
+                    </div>`;
+
+                if (isFinal) {
+                    completedContainer.innerHTML += matchCard;
+                } else {
+                    upcomingContainer.innerHTML += matchCard;
+                }
+            });
+        }
+
+        loadDashboard();
+    </script>
+</body>
+</html>
