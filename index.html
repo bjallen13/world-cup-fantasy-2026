@@ -5,50 +5,67 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>World Cup 2026 Fantasy Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Smooth transitions for tab switching */
+        .tab-content { display: none; animation: fadeIn 0.3s; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans p-4 md:p-8">
-    <div class="max-w-7xl mx-auto space-y-10">
+<body class="bg-slate-50 text-slate-800 font-sans md:p-4 pb-20 md:pb-8">
+    <div class="max-w-5xl mx-auto">
         
-        <header class="text-center py-6 border-b border-slate-200">
-            <h1 class="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-emerald-500 tracking-tight drop-shadow-sm mb-4">
-                World Cup 2026 Fantasy League
+        <header class="text-center py-6 px-4 border-b border-slate-200 bg-white sticky top-0 z-40 shadow-sm md:rounded-b-2xl md:mb-6">
+            <h1 class="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-emerald-500 tracking-tight drop-shadow-sm mb-4">
+                World Cup 2026 Fantasy
             </h1>
-            <a href="https://script.google.com/macros/s/AKfycby9Skk0GddGhXeF0hkCAWUGa7ZeApxLJabV2nnUyYuL4OddI8W2pzKLFC11s7kJu2xM/exec" target="_blank" class="inline-block bg-slate-800 hover:bg-indigo-600 text-white font-bold py-2 px-6 rounded-xl shadow transition-colors">
-                📝 Click Here to Update Scores
+            <a href="https://script.google.com/macros/s/AKfycby9Skk0GddGhXeF0hkCAWUGa7ZeApxLJabV2nnUyYuL4OddI8W2pzKLFC11s7kJu2xM/exec" target="_blank" class="inline-block bg-slate-800 hover:bg-indigo-600 text-white text-sm font-bold py-2 px-6 rounded-full shadow transition-colors">
+                📝 Update Scores
             </a>
+            
+            <div class="flex justify-center mt-6 space-x-2 md:space-x-4">
+                <button onclick="switchTab('leaderboard')" id="nav-leaderboard" class="nav-btn flex-1 md:flex-none px-4 py-2 rounded-lg font-bold text-sm bg-indigo-100 text-indigo-700 transition-colors">🏆 Standings</button>
+                <button onclick="switchTab('groups')" id="nav-groups" class="nav-btn flex-1 md:flex-none px-4 py-2 rounded-lg font-bold text-sm text-slate-500 hover:bg-slate-100 transition-colors">🌍 Groups</button>
+                <button onclick="switchTab('matches')" id="nav-matches" class="nav-btn flex-1 md:flex-none px-4 py-2 rounded-lg font-bold text-sm text-slate-500 hover:bg-slate-100 transition-colors">⚽ Matches</button>
+            </div>
         </header>
 
-        <section class="bg-white rounded-2xl shadow-xl p-6 border-t-4 border-indigo-500">
-            <h2 class="text-3xl font-black mb-6 text-indigo-900 flex items-center"><span class="mr-3">🏆</span> Leaderboard</h2>
-            <div class="overflow-x-auto rounded-lg border border-slate-200">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-indigo-50 text-indigo-800 text-sm uppercase tracking-widest">
-                            <th class="p-4 font-bold">Rank</th>
-                            <th class="p-4 font-bold">Player</th>
-                            <th class="p-4 font-bold text-center">Goal Diff (GD)</th>
-                            <th class="p-4 font-bold text-right">Total Points</th>
-                        </tr>
-                    </thead>
-                    <tbody id="leaderboard-body" class="divide-y divide-slate-100 bg-white"></tbody>
-                </table>
-            </div>
-        </section>
+        <div class="p-4 md:p-0 mt-4 md:mt-0 space-y-6">
+            
+            <section id="tab-leaderboard" class="tab-content active bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="bg-indigo-50 border-b border-indigo-100 p-4">
+                    <h2 class="text-xl font-black text-indigo-900">League Leaderboard</h2>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse whitespace-nowrap">
+                        <thead>
+                            <tr class="bg-white text-slate-400 text-xs uppercase tracking-widest border-b border-slate-100">
+                                <th class="p-3 font-bold text-center w-12">Rank</th>
+                                <th class="p-3 font-bold">Player</th>
+                                <th class="p-3 font-bold text-center">GD</th>
+                                <th class="p-3 font-bold text-right pr-6">PTS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboard-body" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </section>
 
-        <section>
-            <h2 class="text-3xl font-black mb-6 text-emerald-800 flex items-center"><span class="mr-3">🌍</span> Group Standings</h2>
-            <div id="groups-container" class="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12"></div>
-        </section>
+            <section id="tab-groups" class="tab-content">
+                <div id="groups-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6"></div>
+            </section>
 
-        <section class="bg-white rounded-2xl shadow-lg p-6 border-t-4 border-amber-400">
-            <h2 class="text-2xl font-black mb-4 text-amber-600 flex items-center"><span class="mr-3">⏱️</span> Live & Upcoming Games</h2>
-            <div id="upcoming-container" class="space-y-4"></div>
-        </section>
+            <section id="tab-matches" class="tab-content space-y-8">
+                <div class="flex justify-center space-x-2 bg-slate-200 p-1 rounded-lg w-fit mx-auto">
+                    <button onclick="toggleMatchView('upcoming')" id="subnav-upcoming" class="px-4 py-1.5 rounded-md text-sm font-bold bg-white text-slate-800 shadow-sm">Upcoming</button>
+                    <button onclick="toggleMatchView('completed')" id="subnav-completed" class="px-4 py-1.5 rounded-md text-sm font-bold text-slate-500 hover:text-slate-800">Completed</button>
+                </div>
 
-        <section class="bg-slate-100 rounded-2xl p-6 border-t-4 border-slate-400 shadow-inner">
-            <h2 class="text-2xl font-black mb-4 text-slate-700 flex items-center"><span class="mr-3">✅</span> Completed Games</h2>
-            <div id="completed-container" class="space-y-3 opacity-80"></div>
-        </section>
+                <div id="upcoming-container" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+                <div id="completed-container" class="hidden grid grid-cols-1 md:grid-cols-2 gap-3 opacity-90"></div>
+            </section>
+
+        </div>
     </div>
 
     <script>
@@ -86,6 +103,33 @@
 
         let localMatchesState = [];
 
+        // Tab Switching Logic
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(el => {
+                el.classList.remove('bg-indigo-100', 'text-indigo-700');
+                el.classList.add('text-slate-500', 'hover:bg-slate-100');
+            });
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+            const activeBtn = document.getElementById(`nav-${tabId}`);
+            activeBtn.classList.remove('text-slate-500', 'hover:bg-slate-100');
+            activeBtn.classList.add('bg-indigo-100', 'text-indigo-700');
+        }
+
+        function toggleMatchView(view) {
+            if(view === 'upcoming') {
+                document.getElementById('upcoming-container').classList.remove('hidden');
+                document.getElementById('completed-container').classList.add('hidden');
+                document.getElementById('subnav-upcoming').className = "px-4 py-1.5 rounded-md text-sm font-bold bg-white text-slate-800 shadow-sm";
+                document.getElementById('subnav-completed').className = "px-4 py-1.5 rounded-md text-sm font-bold text-slate-500 hover:text-slate-800";
+            } else {
+                document.getElementById('upcoming-container').classList.add('hidden');
+                document.getElementById('completed-container').classList.remove('hidden');
+                document.getElementById('subnav-completed').className = "px-4 py-1.5 rounded-md text-sm font-bold bg-white text-slate-800 shadow-sm";
+                document.getElementById('subnav-upcoming').className = "px-4 py-1.5 rounded-md text-sm font-bold text-slate-500 hover:text-slate-800";
+            }
+        }
+
         function getOwner(teamName) {
             for (const [player, teams] of Object.entries(assignments)) {
                 if (teams.includes(teamName)) return player;
@@ -97,29 +141,26 @@
             try {
                 const response = await fetch(GOOGLE_SHEET_CSV_URL);
                 const csvText = await response.text();
-                
-                // FIXED BUG 1: Properly split by actual line breaks
                 const lines = csvText.split(/\r?\n/).filter(l => l.trim() !== '');
                 
                 for (let i = 1; i < lines.length; i++) {
-                    // FIXED BUG 2: Clean, simple comma split without breaking team names
-                    const row = lines[i].split(',');
+                    const row = lines[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || lines[i].split(',');
+                    const cleanRow = row.map(item => item.replace(/(^"|"$)/g, '').trim());
                     
-                    if (row.length >= 6) {
+                    if (cleanRow.length >= 6) {
                         localMatchesState.push({
-                            date: row[0].trim(),
-                            home: row[1].trim(),
-                            away: row[2].trim(),
-                            homeScore: row[3].trim() === '' ? null : parseInt(row[3].trim()),
-                            awayScore: row[4].trim() === '' ? null : parseInt(row[4].trim()),
-                            status: row[5].trim().toLowerCase()
+                            date: cleanRow[0],
+                            home: cleanRow[1],
+                            away: cleanRow[2],
+                            homeScore: cleanRow[3] === '' ? null : parseInt(cleanRow[3]),
+                            awayScore: cleanRow[4] === '' ? null : parseInt(cleanRow[4]),
+                            status: cleanRow[5] ? cleanRow[5].toLowerCase() : 'upcoming'
                         });
                     }
                 }
                 renderAllData();
             } catch (error) {
-                console.error("Error loading data from Google Sheets:", error);
-                document.getElementById('upcoming-container').innerHTML = `<p class="text-rose-500 font-bold p-4 bg-rose-50 rounded">Failed to load data. Make sure your Google Sheet is shared properly.</p>`;
+                console.error("Error loading data:", error);
             }
         }
 
@@ -142,7 +183,7 @@
                 }
             });
 
-            // Leaderboard Render
+            // Compact Leaderboard Render
             let playerStats = {};
             for (const player in assignments) playerStats[player] = { points: 0, gd: 0 };
             for (const [team, stats] of Object.entries(teamStats)) {
@@ -155,58 +196,63 @@
             const leaderboardBody = document.getElementById('leaderboard-body');
             leaderboardBody.innerHTML = "";
             sortedPlayers.forEach(([player, stats], index) => {
-                const isTop = index === 0 ? "bg-amber-50 font-bold" : "hover:bg-slate-50 transition-colors";
+                const isTop = index === 0 ? "bg-amber-50 font-black" : "hover:bg-slate-50 font-semibold";
+                const rankColor = index === 0 ? "text-amber-500 text-lg" : "text-slate-400";
                 leaderboardBody.innerHTML += `
                     <tr class="${isTop}">
-                        <td class="p-4 border-t text-slate-500">${index + 1}</td>
-                        <td class="p-4 border-t text-slate-800 text-lg font-bold">${player}</td>
-                        <td class="p-4 border-t text-center ${stats.gd > 0 ? 'text-emerald-600 font-bold' : (stats.gd < 0 ? 'text-rose-600 font-bold' : 'text-slate-400')}">${stats.gd > 0 ? '+'+stats.gd : stats.gd}</td>
-                        <td class="p-4 border-t font-black text-indigo-700 text-right text-xl">${stats.points}</td>
+                        <td class="p-3 border-t text-center ${rankColor}">${index + 1}</td>
+                        <td class="p-3 border-t text-slate-800 text-base">${player}</td>
+                        <td class="p-3 border-t text-center text-sm ${stats.gd > 0 ? 'text-emerald-600' : (stats.gd < 0 ? 'text-rose-500' : 'text-slate-400')}">${stats.gd > 0 ? '+'+stats.gd : stats.gd}</td>
+                        <td class="p-3 border-t text-indigo-700 text-right text-lg pr-6">${stats.points}</td>
                     </tr>`;
             });
 
-            // Render Groups
+            // Groups Render
             const groupsContainer = document.getElementById('groups-container');
             groupsContainer.innerHTML = "";
             for (const [groupName, teams] of Object.entries(groups)) {
                 const sortedTeams = teams.sort((a, b) => teamStats[b].points === teamStats[a].points ? teamStats[b].gd - teamStats[a].gd : teamStats[b].points - teamStats[a].points);
-                let groupHtml = `<div class="bg-white rounded-2xl shadow-md border-2 border-slate-100 overflow-hidden"><div class="bg-gradient-to-r from-emerald-600 to-teal-500 text-white p-3 font-black text-center text-lg tracking-wider">GROUP ${groupName}</div><ul class="divide-y divide-slate-100">`;
+                let groupHtml = `<div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"><div class="bg-slate-800 text-white py-2 px-3 font-black text-sm tracking-wider">GROUP ${groupName}</div><ul class="divide-y divide-slate-100">`;
                 sortedTeams.forEach(team => {
                     groupHtml += `
-                        <li class="p-4 flex justify-between items-center text-sm">
-                            <div><span class="font-bold text-slate-800 text-base block">${team}</span><span class="text-xs font-semibold text-indigo-500 uppercase tracking-wide">${teamStats[team].owner}</span></div>
-                            <div class="flex items-center space-x-3"><span class="text-xs font-bold text-slate-400 w-8 text-right">GD: ${teamStats[team].gd > 0 ? '+'+teamStats[team].gd : teamStats[team].gd}</span><span class="font-black bg-emerald-50 px-3 py-1 rounded text-emerald-700 w-16 text-center shadow-sm border border-emerald-100">${teamStats[team].points} pt</span></div>
+                        <li class="p-3 flex justify-between items-center">
+                            <div><span class="font-bold text-slate-800 text-sm block">${team}</span><span class="text-[10px] font-bold text-indigo-500 uppercase tracking-wide">${teamStats[team].owner}</span></div>
+                            <div class="flex items-center space-x-2"><span class="text-[11px] font-bold text-slate-400 w-6 text-right">${teamStats[team].gd > 0 ? '+'+teamStats[team].gd : teamStats[team].gd}</span><span class="font-black bg-slate-100 px-2 py-1 rounded text-slate-700 w-12 text-center text-xs border border-slate-200">${teamStats[team].points}</span></div>
                         </li>`;
                 });
                 groupsContainer.innerHTML += groupHtml + `</ul></div>`;
             }
 
-            // Render Schedules
+            // ESPN-Style Stacked Match Cards
             const upcomingContainer = document.getElementById('upcoming-container');
             const completedContainer = document.getElementById('completed-container');
             upcomingContainer.innerHTML = ""; completedContainer.innerHTML = "";
             
             localMatchesState.forEach(m => {
-                if (m.status === "final") {
-                    completedContainer.innerHTML += `
-                        <div class="flex items-center justify-between p-4 bg-white rounded-xl border border-slate-200 shadow-sm">
-                            <div class="w-1/4 text-sm font-bold text-slate-500">${m.date}</div>
-                            <div class="w-3/4 flex items-center justify-center space-x-6 text-lg">
-                                <span class="font-bold text-right w-1/3 text-slate-800 truncate">${m.home}</span>
-                                <span class="font-black px-4 py-1 bg-slate-800 text-white rounded-lg shadow-md">${m.homeScore} - ${m.awayScore}</span>
-                                <span class="font-bold text-left w-1/3 text-slate-800 truncate">${m.away}</span>
+                const isFinal = m.status === "final";
+                
+                const matchCard = `
+                    <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+                        <div class="flex justify-between items-center border-b border-slate-100 pb-2 mb-2">
+                            <span class="text-[11px] font-black text-slate-400 uppercase tracking-wide">${m.date}</span>
+                            ${isFinal ? `<span class="text-[10px] font-black text-white bg-slate-800 px-2 py-0.5 rounded">FT</span>` : `<span class="text-[10px] font-black text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded">UPCOMING</span>`}
+                        </div>
+                        <div class="space-y-1.5">
+                            <div class="flex justify-between items-center">
+                                <span class="font-bold text-slate-800 text-sm">${m.home}</span>
+                                <span class="font-black ${isFinal ? 'text-slate-800 text-base' : 'text-slate-300'}">${m.homeScore !== null ? m.homeScore : '-'}</span>
                             </div>
-                        </div>`;
+                            <div class="flex justify-between items-center">
+                                <span class="font-bold text-slate-800 text-sm">${m.away}</span>
+                                <span class="font-black ${isFinal ? 'text-slate-800 text-base' : 'text-slate-300'}">${m.awayScore !== null ? m.awayScore : '-'}</span>
+                            </div>
+                        </div>
+                    </div>`;
+
+                if (isFinal) {
+                    completedContainer.innerHTML += matchCard;
                 } else {
-                    upcomingContainer.innerHTML += `
-                        <div class="flex items-center justify-between p-4 bg-white rounded-xl border border-slate-200 shadow-sm">
-                            <div class="w-1/4 text-sm font-bold text-slate-500">${m.date}</div>
-                            <div class="w-3/4 flex items-center justify-center space-x-6 text-lg">
-                                <span class="font-bold text-right w-1/3 text-slate-800 truncate">${m.home}</span>
-                                <span class="text-amber-500 font-black px-4 py-1 bg-amber-50 rounded-lg border border-amber-200 shadow-sm">VS</span>
-                                <span class="font-bold text-left w-1/3 text-slate-800 truncate">${m.away}</span>
-                            </div>
-                        </div>`;
+                    upcomingContainer.innerHTML += matchCard;
                 }
             });
         }
