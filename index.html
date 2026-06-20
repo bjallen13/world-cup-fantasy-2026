@@ -36,7 +36,7 @@
                     <h2 class="text-xl font-black text-indigo-900">League Leaderboard</h2>
                 </div>
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse whitespace-nowrap">
+                    <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="bg-white text-slate-400 text-xs uppercase tracking-widest border-b border-slate-100">
                                 <th class="p-3 font-bold text-center w-12">Rank</th>
@@ -195,19 +195,19 @@
                 const isTop = index === 0 ? "bg-amber-50 font-black" : "hover:bg-slate-50 font-semibold";
                 const rankColor = index === 0 ? "text-amber-500 text-lg" : "text-slate-400";
                 
-                // ONLY MODIFICATION: Extract assigned teams and build the blue pills
+                // FIXED: Added whitespace-nowrap specifically to the pills so they don't break in half, but the table can still wrap.
                 const playerTeams = assignments[player] || [];
-                const teamPills = playerTeams.map(t => `<span class="inline-block bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 rounded-full mt-1 mr-1">${t}</span>`).join('');
+                const teamPills = playerTeams.map(t => `<span class="inline-block bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 rounded-full mt-1 mr-1 whitespace-nowrap">${t}</span>`).join('');
 
                 leaderboardBody.innerHTML += `
                     <tr class="${isTop}">
-                        <td class="p-3 border-t text-center ${rankColor}">${index + 1}</td>
-                        <td class="p-3 border-t text-slate-800 text-base">
-                            <div>${player}</div>
-                            <div>${teamPills}</div>
+                        <td class="p-3 border-t text-center align-middle ${rankColor}">${index + 1}</td>
+                        <td class="p-3 border-t text-slate-800 text-base py-3">
+                            <div class="font-bold">${player}</div>
+                            <div class="flex flex-wrap gap-1 mt-1.5">${teamPills}</div>
                         </td>
-                        <td class="p-3 border-t text-center text-sm ${stats.gd > 0 ? 'text-emerald-600' : (stats.gd < 0 ? 'text-rose-500' : 'text-slate-400')}">${stats.gd > 0 ? '+'+stats.gd : stats.gd}</td>
-                        <td class="p-3 border-t text-indigo-700 text-right text-lg pr-6">${stats.points}</td>
+                        <td class="p-3 border-t text-center text-sm align-middle ${stats.gd > 0 ? 'text-emerald-600' : (stats.gd < 0 ? 'text-rose-500' : 'text-slate-400')}">${stats.gd > 0 ? '+'+stats.gd : stats.gd}</td>
+                        <td class="p-3 border-t text-indigo-700 text-right text-lg pr-6 align-middle">${stats.points}</td>
                     </tr>`;
             });
 
