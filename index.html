@@ -9,63 +9,97 @@
 <body class="bg-slate-50 text-slate-800 font-sans p-4 md:p-8">
     <div class="max-w-7xl mx-auto space-y-10">
         
-        <header class="text-center py-6">
-            <h1 class="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-emerald-500 tracking-tight drop-shadow-sm">
+        <!-- HEADER with Admin Toggle Link -->
+        <header class="flex flex-col md:flex-row justify-between items-center py-6 border-b border-slate-200">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-emerald-500 tracking-tight drop-shadow-sm">
                 World Cup 2026 Fantasy League
             </h1>
+            <button onclick="toggleAdminView()" id="admin-toggle-btn" class="mt-4 md:mt-0 px-4 py-2 bg-slate-800 hover:bg-indigo-600 text-white font-bold rounded-xl shadow transition-all duration-200 flex items-center space-x-2 text-sm">
+                <span>✏️</span> <span>Open Admin Panel</span>
+            </button>
         </header>
 
-        <!-- TOP: Leaderboard -->
-        <section class="bg-white rounded-2xl shadow-xl p-6 border-t-4 border-indigo-500">
-            <h2 class="text-3xl font-black mb-6 text-indigo-900 flex items-center">
-                <span class="mr-3">🏆</span> Leaderboard
-            </h2>
-            <div class="overflow-x-auto rounded-lg border border-slate-200">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-indigo-50 text-indigo-800 text-sm uppercase tracking-widest">
-                            <th class="p-4 font-bold">Rank</th>
-                            <th class="p-4 font-bold">Player</th>
-                            <th class="p-4 font-bold text-center">Goal Diff (GD)</th>
-                            <th class="p-4 font-bold text-right">Total Points</th>
-                        </tr>
-                    </thead>
-                    <tbody id="leaderboard-body" class="divide-y divide-slate-100 bg-white">
-                        <!-- Populated by JS -->
-                    </tbody>
-                </table>
+        <!-- DYNAMIC ADMIN PANEL (Hidden by Default) -->
+        <section id="admin-view" class="hidden bg-slate-900 text-white rounded-2xl shadow-2xl p-6 border-2 border-indigo-500 transition-all duration-300">
+            <div class="flex justify-between items-center mb-6 border-b border-slate-700 pb-4">
+                <div>
+                    <h2 class="text-2xl font-black text-indigo-400">League Scoring Administrator</h2>
+                    <p class="text-xs text-slate-400 mt-1">Enter scores for upcoming games, mark them final, and generate the master update file.</p>
+                </div>
+                <button onclick="toggleAdminView()" class="text-sm bg-slate-800 hover:bg-slate-700 px-3 py-1 rounded-lg text-slate-300">Close Panel ✕</button>
+            </div>
+
+            <!-- Admin Match Selection List -->
+            <div class="max-h-60 overflow-y-auto space-y-3 pr-2 mb-6" id="admin-matches-list">
+                <!-- Dynamically filled with upcoming/live games -->
+            </div>
+
+            <!-- Export Code Box -->
+            <div id="export-box" class="hidden space-y-3 bg-slate-950 p-4 rounded-xl border border-slate-800">
+                <div class="flex justify-between items-center">
+                    <span class="text-emerald-400 font-bold text-sm">✓ JSON Code Block Successfully Generated!</span>
+                    <button onclick="copyAdminJson()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded text-xs font-bold transition-colors">Copy Code Block</button>
+                </div>
+                <p class="text-xs text-slate-400">Click the copy button above, then click the link below to open your GitHub database and paste it directly over your old text.</p>
+                <textarea id="admin-json-output" readonly class="w-full h-32 bg-slate-900 text-slate-300 text-xs font-mono p-3 rounded border border-slate-800 focus:outline-none"></textarea>
+                <a href="https://github.com" target="_blank" id="github-direct-link" class="inline-block text-xs font-bold text-indigo-400 hover:underline">👉 Open GitHub Repository to Paste Data</a>
             </div>
         </section>
 
-        <!-- MIDDLE: Groups (2 Columns with thick dividers) -->
-        <section>
-            <h2 class="text-3xl font-black mb-6 text-emerald-800 flex items-center">
-                <span class="mr-3">🌍</span> Group Standings
-            </h2>
-            <div id="groups-container" class="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
-                <!-- Populated by JS -->
-            </div>
-        </section>
+        <!-- MAIN VIEW (Hidden when Admin panel is full screen if preferred, currently kept together) -->
+        <div id="main-dashboard-view" class="space-y-10">
+            <!-- TOP: Leaderboard -->
+            <section class="bg-white rounded-2xl shadow-xl p-6 border-t-4 border-indigo-500">
+                <h2 class="text-3xl font-black mb-6 text-indigo-900 flex items-center">
+                    <span class="mr-3">🏆</span> Leaderboard
+                </h2>
+                <div class="overflow-x-auto rounded-lg border border-slate-200">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-indigo-50 text-indigo-800 text-sm uppercase tracking-widest">
+                                <th class="p-4 font-bold">Rank</th>
+                                <th class="p-4 font-bold">Player</th>
+                                <th class="p-4 font-bold text-center">Goal Diff (GD)</th>
+                                <th class="p-4 font-bold text-right">Total Points</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboard-body" class="divide-y divide-slate-100 bg-white">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
 
-        <!-- BOTTOM-UPPER: Live & Upcoming Matches -->
-        <section class="bg-white rounded-2xl shadow-lg p-6 border-t-4 border-amber-400">
-            <h2 class="text-2xl font-black mb-4 text-amber-600 flex items-center">
-                <span class="mr-3">⏱️</span> Live & Upcoming Games
-            </h2>
-            <div id="upcoming-container" class="space-y-3">
-                <!-- Populated by JS -->
-            </div>
-        </section>
+            <!-- MIDDLE: Groups -->
+            <section>
+                <h2 class="text-3xl font-black mb-6 text-emerald-800 flex items-center">
+                    <span class="mr-3">🌍</span> Group Standings
+                </h2>
+                <div id="groups-container" class="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
+                    <!-- Populated by JS -->
+                </div>
+            </section>
 
-        <!-- BOTTOM-LOWER: Completed Matches -->
-        <section class="bg-slate-100 rounded-2xl p-6 border-t-4 border-slate-400 shadow-inner">
-            <h2 class="text-2xl font-black mb-4 text-slate-700 flex items-center">
-                <span class="mr-3">✅</span> Completed Games
-            </h2>
-            <div id="completed-container" class="space-y-3 opacity-80">
-                <!-- Populated by JS -->
-            </div>
-        </section>
+            <!-- BOTTOM-UPPER: Live & Upcoming Matches -->
+            <section class="bg-white rounded-2xl shadow-lg p-6 border-t-4 border-amber-400">
+                <h2 class="text-2xl font-black mb-4 text-amber-600 flex items-center">
+                    <span class="mr-3">⏱️</span> Live & Upcoming Games
+                </h2>
+                <div id="upcoming-container" class="space-y-3">
+                    <!-- Populated by JS -->
+                </div>
+            </section>
+
+            <!-- BOTTOM-LOWER: Completed Matches -->
+            <section class="bg-slate-100 rounded-2xl p-6 border-t-4 border-slate-400 shadow-inner">
+                <h2 class="text-2xl font-black mb-4 text-slate-700 flex items-center">
+                    <span class="mr-3">✅</span> Completed Games
+                </h2>
+                <div id="completed-container" class="space-y-3 opacity-80">
+                    <!-- Populated by JS -->
+                </div>
+            </section>
+        </div>
 
     </div>
 
@@ -100,6 +134,8 @@
             "L": ["England", "Croatia", "Ghana", "Panama"]
         };
 
+        let localMatchesState = [];
+
         function getOwner(teamName) {
             for (const [player, teams] of Object.entries(assignments)) {
                 if (teams.includes(teamName)) return player;
@@ -107,142 +143,190 @@
             return "Unassigned";
         }
 
-        async function loadDashboard() {
-            try {
-                // Fetch the separate JSON file
-                const response = await fetch('matches.json');
-                const matches = await response.json();
-
-                let teamStats = {};
-                Object.values(groups).flat().forEach(team => {
-                    teamStats[team] = { points: 0, gd: 0, owner: getOwner(team) };
-                });
-
-                // Calculate Points and GD
-                matches.forEach(m => {
-                    if (m.status === "final" && m.homeScore !== null && m.awayScore !== null) {
-                        const hScore = parseInt(m.homeScore);
-                        const aScore = parseInt(m.awayScore);
-                        
-                        teamStats[m.home].gd += (hScore - aScore);
-                        teamStats[m.away].gd += (aScore - hScore);
-
-                        if (hScore > aScore) teamStats[m.home].points += 3;
-                        else if (hScore < aScore) teamStats[m.away].points += 3;
-                        else {
-                            teamStats[m.home].points += 1;
-                            teamStats[m.away].points += 1;
-                        }
-                    }
-                });
-
-                // Render Leaderboard
-                let playerStats = {};
-                for (const player in assignments) playerStats[player] = { points: 0, gd: 0 };
-                
-                for (const [team, stats] of Object.entries(teamStats)) {
-                    if (stats.owner !== "Unassigned") {
-                        playerStats[stats.owner].points += stats.points;
-                        playerStats[stats.owner].gd += stats.gd;
-                    }
-                }
-
-                // Sort: Points first, GD second
-                const sortedPlayers = Object.entries(playerStats).sort((a, b) => {
-                    if (b[1].points === a[1].points) return b[1].gd - a[1].gd;
-                    return b[1].points - a[1].points;
-                });
-
-                const leaderboardBody = document.getElementById('leaderboard-body');
-                sortedPlayers.forEach(([player, stats], index) => {
-                    const isTop = index === 0 ? "bg-amber-50 font-bold" : "hover:bg-slate-50 transition-colors";
-                    const rankColor = index === 0 ? "text-amber-500 text-xl" : "text-slate-500";
-                    const gdColor = stats.gd > 0 ? "text-emerald-600 font-bold" : (stats.gd < 0 ? "text-rose-600 font-bold" : "text-slate-400");
-                    
-                    leaderboardBody.innerHTML += `
-                        <tr class="${isTop}">
-                            <td class="p-4 border-t ${rankColor}">${index + 1}</td>
-                            <td class="p-4 border-t text-slate-800 text-lg">${player}</td>
-                            <td class="p-4 border-t text-center ${gdColor}">${stats.gd > 0 ? '+'+stats.gd : stats.gd}</td>
-                            <td class="p-4 border-t font-black text-indigo-700 text-right text-xl">${stats.points}</td>
-                        </tr>
-                    `;
-                });
-
-                // Render Groups (Two Columns)
-                const groupsContainer = document.getElementById('groups-container');
-                for (const [groupName, teams] of Object.entries(groups)) {
-                    const sortedTeams = teams.sort((a, b) => {
-                        if (teamStats[b].points === teamStats[a].points) return teamStats[b].gd - teamStats[a].gd;
-                        return teamStats[b].points - teamStats[a].points;
-                    });
-                    
-                    let groupHtml = `
-                        <div class="bg-white rounded-2xl shadow-md border-2 border-slate-100 overflow-hidden transform transition hover:scale-[1.02]">
-                            <div class="bg-gradient-to-r from-emerald-600 to-teal-500 text-white p-3 font-black text-center text-lg tracking-wider">
-                                GROUP ${groupName}
-                            </div>
-                            <ul class="divide-y divide-slate-100">
-                    `;
-                    
-                    sortedTeams.forEach(team => {
-                        const gd = teamStats[team].gd;
-                        const gdDisplay = gd > 0 ? `+${gd}` : gd;
-                        groupHtml += `
-                            <li class="p-4 flex justify-between items-center text-sm">
-                                <div>
-                                    <span class="font-bold text-slate-800 text-base block">${team}</span>
-                                    <span class="text-xs font-semibold text-indigo-500 uppercase tracking-wide">${teamStats[team].owner}</span>
-                                </div>
-                                <div class="flex items-center space-x-3">
-                                    <span class="text-xs font-bold text-slate-400 w-8 text-right">GD: ${gdDisplay}</span>
-                                    <span class="font-black bg-emerald-50 px-3 py-1 rounded text-emerald-700 w-16 text-center shadow-sm border border-emerald-100">${teamStats[team].points} pt</span>
-                                </div>
-                            </li>
-                        `;
-                    });
-                    
-                    groupHtml += `</ul></div>`;
-                    groupsContainer.innerHTML += groupHtml;
-                }
-
-                // Render Schedules
-                const upcomingContainer = document.getElementById('upcoming-container');
-                const completedContainer = document.getElementById('completed-container');
-                
-                matches.forEach(m => {
-                    const isFinal = m.status === "final";
-                    
-                    let matchHtml = `
-                        <div class="flex items-center justify-between p-4 bg-white rounded-xl border border-slate-200 shadow-sm">
-                            <div class="w-1/5 text-sm font-bold text-slate-500">${m.date}</div>
-                            <div class="w-3/5 flex items-center justify-center space-x-6 text-lg">
-                                <span class="font-bold text-right w-1/3 text-slate-800">${m.home}</span>
-                    `;
-
-                    if (isFinal) {
-                        matchHtml += `<span class="font-black px-4 py-1 bg-slate-800 text-white rounded-lg shadow-md">${m.homeScore} - ${m.awayScore}</span>`;
-                    } else {
-                        matchHtml += `<span class="text-amber-500 font-black px-4 py-1 bg-amber-50 rounded-lg border border-amber-200">VS</span>`;
-                    }
-
-                    matchHtml += `
-                                <span class="font-bold text-left w-1/3 text-slate-800">${m.away}</span>
-                            </div>
-                        </div>
-                    `;
-
-                    if (isFinal) completedContainer.innerHTML += matchHtml;
-                    else upcomingContainer.innerHTML += matchHtml;
-                });
-
-            } catch (error) {
-                console.error("Error loading match data:", error);
-                document.getElementById('upcoming-container').innerHTML = `<p class="text-rose-500 p-4 bg-rose-50 rounded">Waiting for matches.json to be created or data is formatted incorrectly.</p>`;
+        function toggleAdminView() {
+            const adminPanel = document.getElementById('admin-view');
+            const toggleBtn = document.getElementById('admin-toggle-btn');
+            if (adminPanel.classList.contains('hidden')) {
+                adminPanel.classList.remove('hidden');
+                toggleBtn.innerHTML = "<span>✕</span> <span>Close Admin Panel</span>";
+                buildAdminMatchList();
+            } else {
+                adminPanel.classList.add('hidden');
+                toggleBtn.innerHTML = "<span>✏️</span> <span>Open Admin Panel</span>";
             }
         }
 
-        // Initialize
+        async function loadDashboard() {
+            try {
+                const response = await fetch('matches.json');
+                localMatchesState = await response.json();
+                renderAllData();
+            } catch (error) {
+                console.error("Error loading match data:", error);
+            }
+        }
+
+        function renderAllData() {
+            let teamStats = {};
+            Object.values(groups).flat().forEach(team => {
+                teamStats[team] = { points: 0, gd: 0, owner: getOwner(team) };
+            });
+
+            localMatchesState.forEach(m => {
+                if (m.status === "final" && m.homeScore !== null && m.awayScore !== null) {
+                    const hScore = parseInt(m.homeScore);
+                    const aScore = parseInt(m.awayScore);
+                    
+                    teamStats[m.home].gd += (hScore - aScore);
+                    teamStats[m.away].gd += (aScore - hScore);
+
+                    if (hScore > aScore) teamStats[m.home].points += 3;
+                    else if (hScore < aScore) teamStats[m.away].points += 3;
+                    else {
+                        teamStats[m.home].points += 1;
+                        teamStats[m.away].points += 1;
+                    }
+                }
+            });
+
+            // Leaderboard Render
+            let playerStats = {};
+            for (const player in assignments) playerStats[player] = { points: 0, gd: 0 };
+            for (const [team, stats] of Object.entries(teamStats)) {
+                if (stats.owner !== "Unassigned") {
+                    playerStats[stats.owner].points += stats.points;
+                    playerStats[stats.owner].gd += stats.gd;
+                }
+            }
+
+            const sortedPlayers = Object.entries(playerStats).sort((a, b) => {
+                if (b[1].points === a[1].points) return b[1].gd - a[1].gd;
+                return b[1].points - a[1].points;
+            });
+
+            const leaderboardBody = document.getElementById('leaderboard-body');
+            leaderboardBody.innerHTML = "";
+            sortedPlayers.forEach(([player, stats], index) => {
+                const isTop = index === 0 ? "bg-amber-50 font-bold" : "hover:bg-slate-50 transition-colors";
+                const rankColor = index === 0 ? "text-amber-500 text-xl" : "text-slate-500";
+                const gdColor = stats.gd > 0 ? "text-emerald-600 font-bold" : (stats.gd < 0 ? "text-rose-600 font-bold" : "text-slate-400");
+                leaderboardBody.innerHTML += `
+                    <tr class="${isTop}">
+                        <td class="p-4 border-t ${rankColor}">${index + 1}</td>
+                        <td class="p-4 border-t text-slate-800 text-lg">${player}</td>
+                        <td class="p-4 border-t text-center ${gdColor}">${stats.gd > 0 ? '+'+stats.gd : stats.gd}</td>
+                        <td class="p-4 border-t font-black text-indigo-700 text-right text-xl">${stats.points}</td>
+                    </tr>`;
+            });
+
+            // Groups Render
+            const groupsContainer = document.getElementById('groups-container');
+            groupsContainer.innerHTML = "";
+            for (const [groupName, teams] of Object.entries(groups)) {
+                const sortedTeams = teams.sort((a, b) => {
+                    if (teamStats[b].points === teamStats[a].points) return teamStats[b].gd - teamStats[a].gd;
+                    return teamStats[b].points - teamStats[a].points;
+                });
+                
+                let groupHtml = `
+                    <div class="bg-white rounded-2xl shadow-md border-2 border-slate-100 overflow-hidden">
+                        <div class="bg-gradient-to-r from-emerald-600 to-teal-500 text-white p-3 font-black text-center text-lg tracking-wider">GROUP ${groupName}</div>
+                        <ul class="divide-y divide-slate-100">`;
+                
+                sortedTeams.forEach(team => {
+                    const gd = teamStats[team].gd;
+                    groupHtml += `
+                        <li class="p-4 flex justify-between items-center text-sm">
+                            <div>
+                                <span class="font-bold text-slate-800 text-base block">${team}</span>
+                                <span class="text-xs font-semibold text-indigo-500 uppercase tracking-wide">${teamStats[team].owner}</span>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <span class="text-xs font-bold text-slate-400 w-8 text-right">GD: ${gd > 0 ? '+'+gd : gd}</span>
+                                <span class="font-black bg-emerald-50 px-3 py-1 rounded text-emerald-700 w-16 text-center shadow-sm border border-emerald-100">${teamStats[team].points} pt</span>
+                            </div>
+                        </li>`;
+                });
+                groupHtml += `</ul></div>`;
+                groupsContainer.innerHTML += groupHtml;
+            }
+
+            // Schedules Render
+            const upcomingContainer = document.getElementById('upcoming-container');
+            const completedContainer = document.getElementById('completed-container');
+            upcomingContainer.innerHTML = "";
+            completedContainer.innerHTML = "";
+            
+            localMatchesState.forEach(m => {
+                const isFinal = m.status === "final";
+                const matchHtml = `
+                    <div class="flex items-center justify-between p-4 bg-white rounded-xl border border-slate-200 shadow-sm">
+                        <div class="w-1/5 text-sm font-bold text-slate-500">${m.date}</div>
+                        <div class="w-3/5 flex items-center justify-center space-x-6 text-lg">
+                            <span class="font-bold text-right w-1/3 text-slate-800">${m.home}</span>
+                            ${isFinal ? `<span class="font-black px-4 py-1 bg-slate-800 text-white rounded-lg shadow-md">${m.homeScore} - ${m.awayScore}</span>` : `<span class="text-amber-500 font-black px-4 py-1 bg-amber-50 rounded-lg border border-amber-200">VS</span>`}
+                            <span class="font-bold text-left w-1/3 text-slate-800">${m.away}</span>
+                        </div>
+                    </div>`;
+                if (isFinal) completedContainer.innerHTML += matchHtml;
+                else upcomingContainer.innerHTML += matchHtml;
+            });
+        }
+
+        // Admin Engine Layout Builder
+        function buildAdminMatchList() {
+            const container = document.getElementById('admin-matches-list');
+            container.innerHTML = "";
+            
+            localMatchesState.forEach((m, index) => {
+                const isFinal = m.status === "final";
+                const div = document.createElement('div');
+                div.className = "flex flex-col sm:flex-row items-center justify-between p-3 bg-slate-800 rounded-xl border border-slate-700 space-y-2 sm:space-y-0 shadow";
+                div.innerHTML = `
+                    <div class="text-xs font-bold text-slate-400 w-full sm:w-1/4">${m.date} [Game ${index+1}]</div>
+                    <div class="flex items-center justify-center space-x-2 w-full sm:w-2/4 text-sm">
+                        <span class="font-bold text-right w-24 truncate">${m.home}</span>
+                        <input type="number" id="admin-home-${index}" value="${m.homeScore !== null ? m.homeScore : ''}" placeholder="0" class="w-12 text-center text-black font-bold p-1 rounded border">
+                        <span class="text-slate-500">-</span>
+                        <input type="number" id="admin-away-${index}" value="${m.awayScore !== null ? m.awayScore : ''}" placeholder="0" class="w-12 text-center text-black font-bold p-1 rounded border">
+                        <span class="font-bold text-left w-24 truncate">${m.away}</span>
+                    </div>
+                    <div class="w-full sm:w-1/4 text-right flex justify-end space-x-2">
+                        <select id="admin-status-${index}" class="text-xs bg-slate-700 text-white p-1 rounded border border-slate-600 focus:outline-none" onchange="submitAdminSingleRow(${index})">
+                            <option value="upcoming" ${!isFinal ? 'selected' : ''}>Upcoming</option>
+                            <option value="final" ${isFinal ? 'selected' : ''}>Completed</option>
+                        </select>
+                        <button onclick="submitAdminSingleRow(${index})" class="bg-indigo-600 hover:bg-indigo-500 px-3 py-1 rounded text-xs font-black text-white transition-colors">Apply</button>
+                    </div>`;
+                container.appendChild(div);
+            });
+        }
+
+        function submitAdminSingleRow(index) {
+            const hVal = document.getElementById(`admin-home-${index}`).value;
+            const aVal = document.getElementById(`admin-away-${index}`).value;
+            const sVal = document.getElementById(`admin-status-${index}`).value;
+
+            localMatchesState[index].homeScore = hVal !== "" ? parseInt(hVal) : null;
+            localMatchesState[index].awayScore = aVal !== "" ? parseInt(aVal) : null;
+            localMatchesState[index].status = sVal;
+
+            // Recalculate frontend values immediately
+            renderAllData();
+
+            // Open export utility code panel
+            document.getElementById('export-box').classList.remove('hidden');
+            document.getElementById('admin-json-output').value = JSON.stringify(localMatchesState, null, 2);
+        }
+
+        function copyAdminJson() {
+            const textArea = document.getElementById('admin-json-output');
+            textArea.select();
+            document.execCommand('copy');
+            alert("Code block copied to clipboard! Paste this inside your matches.json file on GitHub.");
+        }
+
+        // Auto-run on mount
         loadDashboard();
     </script>
 </body>
