@@ -22,11 +22,12 @@
                 📝 Update Scores
             </a>
             
-            <div class="flex justify-center mt-6 space-x-2 md:space-x-4 overflow-x-auto pb-2">
-                <button onclick="switchTab('leaderboard')" id="nav-leaderboard" class="nav-btn flex-1 md:flex-none px-4 py-2 rounded-lg font-bold text-sm bg-indigo-100 text-indigo-700 transition-colors whitespace-nowrap">🏆 Standings</button>
-                <button onclick="switchTab('groups')" id="nav-groups" class="nav-btn flex-1 md:flex-none px-4 py-2 rounded-lg font-bold text-sm text-slate-500 hover:bg-slate-100 transition-colors whitespace-nowrap">🌍 Groups</button>
-                <button onclick="switchTab('matches')" id="nav-matches" class="nav-btn flex-1 md:flex-none px-4 py-2 rounded-lg font-bold text-sm text-slate-500 hover:bg-slate-100 transition-colors whitespace-nowrap">⚽ Matches</button>
-                <button onclick="switchTab('knockout')" id="nav-knockout" class="nav-btn flex-1 md:flex-none px-4 py-2 rounded-lg font-bold text-sm text-slate-500 hover:bg-slate-100 transition-colors whitespace-nowrap">⚔️ Knockout</button>
+            <!-- FIXED: Optimized spacing, text-size, and labels for flawless mobile fit without horizontal scrolling -->
+            <div class="flex justify-center mt-6 space-x-1 md:space-x-4 pb-2">
+                <button onclick="switchTab('leaderboard')" id="nav-leaderboard" class="nav-btn flex-1 md:flex-none px-2 md:px-4 py-2 rounded-lg font-bold text-xs md:text-sm bg-indigo-100 text-indigo-700 transition-colors whitespace-nowrap">🏆 Standings</button>
+                <button onclick="switchTab('groups')" id="nav-groups" class="nav-btn flex-1 md:flex-none px-2 md:px-4 py-2 rounded-lg font-bold text-xs md:text-sm text-slate-500 hover:bg-slate-100 transition-colors whitespace-nowrap">🌍 Groups</button>
+                <button onclick="switchTab('matches')" id="nav-matches" class="nav-btn flex-1 md:flex-none px-2 md:px-4 py-2 rounded-lg font-bold text-xs md:text-sm text-slate-500 hover:bg-slate-100 transition-colors whitespace-nowrap">⚽ Matches</button>
+                <button onclick="switchTab('knockout')" id="nav-knockout" class="nav-btn flex-1 md:flex-none px-2 md:px-4 py-2 rounded-lg font-bold text-xs md:text-sm text-slate-500 hover:bg-slate-100 transition-colors whitespace-nowrap">⚔️ Bracket</button>
             </div>
         </header>
 
@@ -75,6 +76,7 @@
         </div>
     </div>
 
+    <!-- MINIMALIST MODAL POPUP -->
     <div id="team-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
         <div class="bg-white rounded-xl shadow-2xl p-5 w-full max-w-sm max-h-[80vh] overflow-y-auto relative">
             <button onclick="closeModal()" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 font-bold hover:bg-slate-200 transition-colors">✕</button>
@@ -116,7 +118,6 @@
             "L": ["England", "Croatia", "Ghana", "Panama"]
         };
 
-        // KNOCKOUT MATCHUPS: Edit these names when the real teams advance!
         const knockoutMatches = [
             { home: "1st Group A", away: "Wildcard" },
             { home: "2nd Group A", away: "2nd Group B" },
@@ -329,7 +330,6 @@
                 }
             });
 
-            // RENDER THE NEW KNOCKOUT CARDS
             const knockoutContainer = document.getElementById('knockout-container');
             knockoutContainer.innerHTML = "";
             knockoutMatches.forEach(m => {
