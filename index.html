@@ -22,10 +22,11 @@
                 📝 Update Scores
             </a>
             
-            <div class="flex justify-center mt-6 space-x-2 md:space-x-4">
-                <button onclick="switchTab('leaderboard')" id="nav-leaderboard" class="nav-btn flex-1 md:flex-none px-4 py-2 rounded-lg font-bold text-sm bg-indigo-100 text-indigo-700 transition-colors">🏆 Standings</button>
-                <button onclick="switchTab('groups')" id="nav-groups" class="nav-btn flex-1 md:flex-none px-4 py-2 rounded-lg font-bold text-sm text-slate-500 hover:bg-slate-100 transition-colors">🌍 Groups</button>
-                <button onclick="switchTab('matches')" id="nav-matches" class="nav-btn flex-1 md:flex-none px-4 py-2 rounded-lg font-bold text-sm text-slate-500 hover:bg-slate-100 transition-colors">⚽ Matches</button>
+            <div class="flex justify-center mt-6 space-x-2 md:space-x-4 overflow-x-auto pb-2">
+                <button onclick="switchTab('leaderboard')" id="nav-leaderboard" class="nav-btn flex-1 md:flex-none px-4 py-2 rounded-lg font-bold text-sm bg-indigo-100 text-indigo-700 transition-colors whitespace-nowrap">🏆 Standings</button>
+                <button onclick="switchTab('groups')" id="nav-groups" class="nav-btn flex-1 md:flex-none px-4 py-2 rounded-lg font-bold text-sm text-slate-500 hover:bg-slate-100 transition-colors whitespace-nowrap">🌍 Groups</button>
+                <button onclick="switchTab('matches')" id="nav-matches" class="nav-btn flex-1 md:flex-none px-4 py-2 rounded-lg font-bold text-sm text-slate-500 hover:bg-slate-100 transition-colors whitespace-nowrap">⚽ Matches</button>
+                <button onclick="switchTab('knockout')" id="nav-knockout" class="nav-btn flex-1 md:flex-none px-4 py-2 rounded-lg font-bold text-sm text-slate-500 hover:bg-slate-100 transition-colors whitespace-nowrap">⚔️ Knockout</button>
             </div>
         </header>
 
@@ -61,6 +62,14 @@
                 </div>
                 <div id="upcoming-container" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
                 <div id="completed-container" class="hidden grid grid-cols-1 md:grid-cols-2 gap-3 opacity-90"></div>
+            </section>
+
+            <section id="tab-knockout" class="tab-content space-y-4">
+                <div class="bg-slate-800 text-white rounded-xl p-4 text-center shadow-sm">
+                    <h2 class="text-xl font-black tracking-wide">Round of 32</h2>
+                    <p class="text-xs font-bold text-slate-300 mt-1">Matchups will be updated when the group stage concludes.</p>
+                </div>
+                <div id="knockout-container" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
             </section>
 
         </div>
@@ -107,6 +116,26 @@
             "L": ["England", "Croatia", "Ghana", "Panama"]
         };
 
+        // KNOCKOUT MATCHUPS: Edit these names when the real teams advance!
+        const knockoutMatches = [
+            { home: "1st Group A", away: "Wildcard" },
+            { home: "2nd Group A", away: "2nd Group B" },
+            { home: "1st Group B", away: "Wildcard" },
+            { home: "1st Group C", away: "Wildcard" },
+            { home: "2nd Group C", away: "2nd Group D" },
+            { home: "1st Group D", away: "Wildcard" },
+            { home: "1st Group E", away: "Wildcard" },
+            { home: "2nd Group E", away: "2nd Group F" },
+            { home: "1st Group F", away: "Wildcard" },
+            { home: "1st Group G", away: "Wildcard" },
+            { home: "2nd Group G", away: "2nd Group H" },
+            { home: "1st Group H", away: "Wildcard" },
+            { home: "1st Group I", away: "Wildcard" },
+            { home: "2nd Group I", away: "2nd Group J" },
+            { home: "1st Group J", away: "2nd Group K" },
+            { home: "1st Group K", away: "1st Group L" } 
+        ];
+
         let localMatchesState = [];
 
         function switchTab(tabId) {
@@ -135,7 +164,6 @@
             }
         }
 
-        /* --- SIMPLE MODAL LOGIC --- */
         function openModal(teamName) {
             document.getElementById('modal-title').innerText = teamName + " Matches";
             const content = document.getElementById('modal-content');
@@ -198,7 +226,7 @@
                 renderAllData();
             } catch (error) {
                 console.error("Error loading data:", error);
-                document.getElementById('upcoming-container').innerHTML = `<p class="text-rose-500 font-bold p-4 bg-rose-50 rounded border border-rose-200">Error: Cannot read Google Sheet. Please check the Share permissions in Google Sheets.</p>`;
+                document.getElementById('upcoming-container').innerHTML = `<p class="text-rose-500 font-bold p-4 bg-rose-50 rounded border border-rose-200">Error: Cannot read Google Sheet.</p>`;
             }
         }
 
@@ -238,7 +266,6 @@
                 const rankColor = index === 0 ? "text-amber-500 text-lg" : "text-slate-400";
                 
                 const playerTeams = assignments[player] || [];
-                // UPDATED: Blue pills now trigger the modal
                 const teamPills = playerTeams.map(t => `<button onclick="openModal('${t}')" class="inline-block bg-blue-100 hover:bg-blue-200 text-blue-800 text-[10px] font-bold px-2 py-0.5 rounded-full mt-1 mr-1 whitespace-nowrap transition-colors text-left">${t}</button>`).join('');
 
                 leaderboardBody.innerHTML += `
@@ -300,6 +327,26 @@
                 } else {
                     upcomingContainer.innerHTML += matchCard;
                 }
+            });
+
+            // RENDER THE NEW KNOCKOUT CARDS
+            const knockoutContainer = document.getElementById('knockout-container');
+            knockoutContainer.innerHTML = "";
+            knockoutMatches.forEach(m => {
+                knockoutContainer.innerHTML += `
+                    <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+                        <div class="space-y-1.5 mt-1">
+                            <div class="flex justify-between items-center">
+                                <span class="font-bold text-slate-800 text-sm">${m.home}</span>
+                                <span class="font-black text-slate-200">-</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="font-bold text-slate-800 text-sm">${m.away}</span>
+                                <span class="font-black text-slate-200">-</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
             });
         }
 
